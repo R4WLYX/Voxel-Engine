@@ -37,11 +37,11 @@ int main() {
         // window.set_vsync(true);
 
         // clang-format off
-        std::vector<float>vertices{
-            -0.5, 0.5,-0.5,
-            -0.5, 0.5, 0.5,
-             0.5, 0.5, 0.5,
-             0.5, 0.5,-0.5
+        std::vector<float> vertices{
+           -0.5,-0.5, 0.5, 0, 0, 1, 0, 0,
+            0.5,-0.5, 0.5, 0, 0, 1, 1, 0,
+            0.5, 0.5, 0.5, 0, 0, 1, 1, 1,
+           -0.5, 0.5, 0.5, 0, 0, 1, 0, 1,
         };
 
         std::vector<unsigned int> indices{
@@ -68,7 +68,11 @@ int main() {
         vertex_buffers.push(vertices);
 
         VertexLayout layout;
+        
         layout.push<float>(3);
+        layout.push<float>(3);
+        layout.push<float>(2);
+
         layout.finalize();
 
         MeshData mesh_data{vertex_buffers, indices, layout};
