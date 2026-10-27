@@ -45,7 +45,8 @@ int main() {
         };
 
         std::vector<unsigned int> indices{
-            0, 1, 2, 3
+            0, 1, 2,
+            2, 3, 0
         };
         // clang-format on
 
@@ -87,7 +88,7 @@ int main() {
         glm::mat4 proj = glm::perspective(glm::radians(70.0f), 16.0f / 9.0f, 0.01f, 1000.0f);
         glm::mat4 view =
             glm::lookAt(glm::vec3{0, 0, -float(chunk_size) * 1.25f}, glm::vec3{0, 0, 0}, glm::vec3{0, 1, 0});
-        glm::mat4 model = glm::translate(glm::mat4(1.0), {0, 0, 0});
+        glm::mat4 model = glm::translate(glm::mat4(1.0), {0, -10, 0});
 
         material.set_uniform("u_proj", proj);
         material.set_uniform("u_view", view);
