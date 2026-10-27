@@ -1,6 +1,9 @@
+#include <bit>
 #include <cstddef>
 #include <cstdint>
+#include <exception>
 #include <iostream>
+#include <limits>
 #include <random>
 #include <vector>
 
@@ -36,22 +39,7 @@ int main() {
         Window& window = engine.window();
         // window.set_vsync(true);
 
-        // clang-format off
-        std::vector<float> vertices{
-           -0.5,-0.5, 0.5, 0, 0, 1, 0, 0,
-            0.5,-0.5, 0.5, 0, 0, 1, 1, 0,
-            0.5, 0.5, 0.5, 0, 0, 1, 1, 1,
-           -0.5, 0.5, 0.5, 0, 0, 1, 0, 1,
-        };
-
-        std::vector<unsigned int> indices{
-            0, 1, 2,
-            2, 3, 0
-        };
-        // clang-format on
-
-        constexpr size_t chunk_size = 32;
-
+        constexpr size_t chunk_size = sizeof(uint32_t);
         std::vector<uint32_t> occupied{chunk_size * chunk_size, 0};
 
         std::uniform_int_distribution<uint32_t> dist{};
@@ -59,20 +47,46 @@ int main() {
 
         for (uint32_t& strip : occupied) strip = dist(rng);
 
-        // auto T0 = std::chrono::high_resolution_clock::now();
+        std::vector<uint32_t> vertices;
+        std::vector<uint32_t> indices;
 
-        // auto T1 = std::chrono::high_resolution_clock::now();
-        // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(T1 - T0);
+        auto T0 = std::chrono::high_resolution_clock::now();
+
+        for (size_t z = 0; z < chunk_size; z++) {
+            std::vector<uint32_t> data{occupied.begin() + z * chunk_size, occupied.begin() + (z + 1) * chunk_size};
+            
+            for (size_t x = 0; x < chunk_size; x++) {
+                for (size_t y = 0; y < chunk_size; y += std::countr_zero(data[x] >> y)) {
+                    if (y >= chunk_size) continue;
+
+                    size_t h = std::countr_one(data[x] >> y);
+
+                    uint32_t h_as_mask =
+                        (h < chunk_size) ? ((uint32_t(1) << h) + 1) : std::numeric_limits<uint32_t>::max();
+                    uint32_t mask = h_as_mask << y;
+
+                    for (size_t w = 1; x + w < chunk_size; ++w) {
+                        uint32_t next_row_h = (data[x + w] >> y) & h_as_mask;
+                        if (next_row_h != h_as_mask) break;
+
+                        data[x + w] = data[x + w] & !mask;
+                    }
+
+                    // add quads vertices and indices
+
+                    y += h;
+                }
+            }
+        }
+
+        auto T1 = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(T1 - T0);
 
         VertexBuffers vertex_buffers;
         vertex_buffers.push(vertices);
 
         VertexLayout layout;
-        
-        layout.push<float>(3);
-        layout.push<float>(3);
-        layout.push<float>(2);
-
+        layout.push<uint32_t>(1, 0);
         layout.finalize();
 
         MeshData mesh_data{vertex_buffers, indices, layout};
@@ -92,7 +106,7 @@ int main() {
         glm::mat4 proj = glm::perspective(glm::radians(70.0f), 16.0f / 9.0f, 0.01f, 1000.0f);
         glm::mat4 view =
             glm::lookAt(glm::vec3{0, 0, -float(chunk_size) * 1.25f}, glm::vec3{0, 0, 0}, glm::vec3{0, 1, 0});
-        glm::mat4 model = glm::translate(glm::mat4(1.0), {0, -10, 0});
+        glm::mat4 model = glm::translate(glm::mat4(1.0), {0, 0, 0});
 
         material.set_uniform("u_proj", proj);
         material.set_uniform("u_view", view);
