@@ -1,4 +1,5 @@
 #include <bit>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <exception>
@@ -56,6 +57,8 @@ int main() {
         };
         // clang-format on
 
+        std::vector<uint32_t> quads{};
+
         std::vector<uint32_t> indices{0, 1, 2, 2, 3, 0};
 
         auto T0 = std::chrono::high_resolution_clock::now();
@@ -73,14 +76,21 @@ int main() {
                         (h < chunk_size) ? ((uint32_t(1) << h) + 1) : std::numeric_limits<uint32_t>::max();
                     uint32_t mask = h_as_mask << y;
 
-                    for (size_t w = 1; x + w < chunk_size; ++w) {
+                    size_t w = 1;
+                    for (; x + w < chunk_size; ++w) {
                         uint32_t next_row_h = (data[x + w] >> y) & h_as_mask;
                         if (next_row_h != h_as_mask) break;
 
                         data[x + w] = data[x + w] & !mask;
                     }
 
-                    // add quads vertices and indices
+                    uint32_t quad = 0;
+                    quad |= (w & 0x1f) << 20;
+                    quad |= (h & 0x1f) << 15;
+                    quad |= (x & 0x1f) << 10;
+                    quad |= (y & 0x1f) << 5;
+                    quad |= (z & 0x1f);
+                    quads.push_back(quad);
 
                     y += h;
                 }
@@ -88,13 +98,18 @@ int main() {
         }
 
         auto T1 = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(T1 - T0);
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(T1 - T0);
+
+        std::cout << "Time taken: " << double(duration.count()) / 1000.0 << "ms\n";
 
         VertexBuffers vertex_buffers;
         vertex_buffers.push(vertices);
+        vertex_buffers.push(quads);
 
         VertexLayout layout;
-        layout.push<uint32_t>(1, 0);
+        layout.push<float>(3, 0, 0);
+        layout.push<float>(2, 0, 0);
+        layout.push<uint32_t>(1, 1, 1);
         layout.finalize();
 
         MeshData mesh_data{vertex_buffers, indices, layout};
