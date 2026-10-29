@@ -47,14 +47,22 @@ int main() {
 
         for (uint32_t& strip : occupied) strip = dist(rng);
 
-        std::vector<uint32_t> vertices;
-        std::vector<uint32_t> indices;
+        // clang-format off
+        std::vector<float> vertices {
+            -0.5,-0.5, 0.5, 0, 0,
+             0.5,-0.5, 0.5, 1, 0,
+             0.5, 0.5, 0.5, 1, 1,
+            -0.5, 0.5, 0.5, 0, 1
+        };
+        // clang-format on
+
+        std::vector<uint32_t> indices{0, 1, 2, 2, 3, 0};
 
         auto T0 = std::chrono::high_resolution_clock::now();
 
         for (size_t z = 0; z < chunk_size; z++) {
             std::vector<uint32_t> data{occupied.begin() + z * chunk_size, occupied.begin() + (z + 1) * chunk_size};
-            
+
             for (size_t x = 0; x < chunk_size; x++) {
                 for (size_t y = 0; y < chunk_size; y += std::countr_zero(data[x] >> y)) {
                     if (y >= chunk_size) continue;
