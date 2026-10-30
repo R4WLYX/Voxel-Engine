@@ -15,6 +15,7 @@ struct MeshData {
 
 class Mesh {
   public:
+    Mesh() = default;
     Mesh(const MeshData&);
 
     GLenum primitive = GL_TRIANGLES;
