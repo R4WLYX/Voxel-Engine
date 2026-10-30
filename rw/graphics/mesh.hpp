@@ -71,10 +71,11 @@ inline Mesh::Mesh(const MeshData& data) {
         const auto& e = elements[i];
 
         glBindBuffer(GL_ARRAY_BUFFER, _vertex_buffers[e.buffer_index]);
-
         glEnableVertexAttribArray(i);
-        glVertexAttribPointer(i, e.count, e.type, e.normalized, e.stride, reinterpret_cast<void*>(e.offset));
 
+        if (e.type == GL_UNSIGNED_INT)
+            glVertexAttribIPointer(i, e.count, e.type, e.stride, reinterpret_cast<void*>(e.offset));
+        else glVertexAttribPointer(i, e.count, e.type, e.normalized, e.stride, reinterpret_cast<void*>(e.offset));
         glVertexAttribDivisor(i, e.divisor);
     }
 
@@ -94,12 +95,9 @@ inline void Mesh::update_buffer(size_t index, const void* data, size_t size) {
     glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
 }
 
-inline void Mesh::bind() const {
-    glBindVertexArray(_vertex_array);
-}
+inline void Mesh::bind() const { glBindVertexArray(_vertex_array); }
 
 inline void Mesh::draw() const {
     glBindVertexArray(_vertex_array);
-    if (instance_count <= 1) glDrawElements(primitive, index_count, index_type, nullptr);
-    else glDrawElementsInstanced(primitive, index_count, index_type, nullptr, instance_count);
+    glDrawElementsInstanced(primitive, index_count, index_type, nullptr, instance_count);
 }

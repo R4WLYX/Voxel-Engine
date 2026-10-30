@@ -25,8 +25,8 @@ void main() {
     vec2 corner = corners[gl_VertexID];
 
     vec3 pos = vec3(
-        float(x) + corner.x * float(w),
-        float(y) + corner.y * float(h),
+        float(x) + corner.x * float(w) - 16,
+        float(y) + corner.y * float(h) - 16,
         float(z)
     );
 
