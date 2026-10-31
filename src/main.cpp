@@ -35,7 +35,7 @@ int main() {
 
         Window& window = engine.window();
         window.set_vsync(true);
-
+        
         Chunk chunk(0, 0, 0);
 
         Shader vertex_shader(ShaderType::Vertex, "../res/vert.glsl");
@@ -49,7 +49,7 @@ int main() {
         Material material(shader);
 
         glm::mat4 proj = glm::perspective(glm::radians(70.0f), 16.0f / 9.0f, 0.01f, 1000.0f);
-        glm::mat4 view = glm::lookAt(glm::vec3{0, 0, 32.0f}, glm::vec3{0, 0, 0}, glm::vec3{0, 1, 0});
+        glm::mat4 view = glm::lookAt(glm::vec3{0, 0, -32.0f}, glm::vec3{0, 0, 0}, glm::vec3{0, 1, 0});
         glm::mat4 model = glm::translate(glm::mat4(1.0), {0, 0, 0});
 
         material.set_uniform("u_proj", proj);
