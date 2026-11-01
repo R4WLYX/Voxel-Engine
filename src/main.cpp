@@ -9,6 +9,7 @@
 
 #include <glm/ext/matrix_transform.hpp>
 
+#include "noise.hpp"
 #include "chunk.hpp"
 
 int main() {
@@ -35,7 +36,7 @@ int main() {
 
         Window& window = engine.window();
         window.set_vsync(true);
-        
+
         Chunk chunk(0, 0, 0);
 
         Shader vertex_shader(ShaderType::Vertex, "../res/vert.glsl");
